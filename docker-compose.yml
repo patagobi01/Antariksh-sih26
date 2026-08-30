@@ -1,0 +1,37 @@
+version: '3.8'
+
+services:
+  database:
+    image: postgis/postgis:16-3.4
+    container_name: landslide_postgres
+    restart: always
+    environment:
+      POSTGRES_DB: landslide_db
+      POSTGRES_USER: postgres
+      POSTGRES_PASSWORD: postgres_sih2026_password
+    ports:
+      - "5432:5432"
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+      - ./database/01_schema.sql:/docker-entrypoint-initdb.d/01_schema.sql
+      - ./database/02_seed_data.sql:/docker-entrypoint-initdb.d/02_seed_data.sql
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U postgres -d landslide_db"]
+      interval: 5s
+      timeout: 5s
+      retries: 5
+
+  pgadmin:
+    image: dpage/pgadmin4:latest
+    container_name: landslide_pgadmin
+    restart: always
+    environment:
+      PGADMIN_DEFAULT_EMAIL: admin@sih2026.gov.in
+      PGADMIN_DEFAULT_PASSWORD: admin_sih_password
+    ports:
+      - "5050:80"
+    depends_on:
+      - database
+
+volumes:
+  postgres_data:
